@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Play, Image as ImageIcon } from 'lucide-react';
 
@@ -15,6 +15,9 @@ const quickAlarms = [
 
 export default function SidebarStats({ onViewMedia }: { onViewMedia: () => void }) {
   const [statPeriod, setStatPeriod] = useState<'day' | 'week' | 'month'>('day');
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const totalAlarms = useMemo(() => pieData.reduce((acc, curr) => acc + curr.value, 0), []);
 
   return (
     <div className="w-[320px] flex-shrink-0 flex flex-col gap-5 text-cyan-100 p-5 font-mono">
@@ -78,37 +81,69 @@ export default function SidebarStats({ onViewMedia }: { onViewMedia: () => void 
           {/* Decorative scanner line */}
           <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-cyan-900/30 pointer-events-none"></div>
           
-          <div className="h-full w-[120px] relative">
+          <div className="h-full w-[120px] relative transition-transform duration-300 hover:scale-105 cursor-pointer">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={38}
-                  outerRadius={50}
+                  innerRadius={40}
+                  outerRadius={52}
                   stroke="none"
                   dataKey="value"
                   paddingAngle={5}
+                  onMouseEnter={(_, index) => setActiveIndex(index)}
+                  onMouseLeave={() => setActiveIndex(null)}
                 >
                   {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} style={{ filter: `drop-shadow(0px 0px 4px ${entry.color})` }} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color} 
+                      style={{ 
+                        filter: `drop-shadow(0px 0px 6px ${entry.color})`,
+                        opacity: activeIndex === index || activeIndex === null ? 1 : 0.3,
+                        outline: 'none',
+                        transition: 'opacity 0.3s ease'
+                      }} 
+                    />
                   ))}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-2xl font-bold text-cyan-300 text-glow">32</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 text-cyan-300 mt-1">
+              {activeIndex !== null ? (
+                <>
+                  <span className="text-xl font-bold leading-none text-glow mb-0.5" style={{ color: pieData[activeIndex].color }}>
+                    {pieData[activeIndex].value}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold tracking-widest opacity-80" style={{ color: pieData[activeIndex].color }}>
+                    {((pieData[activeIndex].value / totalAlarms) * 100).toFixed(0)}%
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-2xl font-bold text-glow leading-none">{totalAlarms}</span>
+                  <span className="text-[9px] uppercase tracking-widest text-cyan-500 font-bold mt-1">总计</span>
+                </>
+              )}
             </div>
           </div>
-          <div className="flex flex-col gap-3 text-xs">
-            {pieData.map(d => (
-              <div key={d.name} className="flex flex-col gap-1 items-end">
+          <div className="flex flex-col gap-3 text-xs w-[80px]">
+            {pieData.map((d, index) => (
+              <div 
+                key={d.name} 
+                className={`flex flex-col gap-1 items-end transition-all duration-300 cursor-pointer ${activeIndex === index ? 'scale-110 drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]' : activeIndex !== null ? 'opacity-40' : ''}`}
+                onMouseEnter={() => setActiveIndex(index)}
+                onMouseLeave={() => setActiveIndex(null)}
+              >
                 <div className="flex items-center gap-2 text-cyan-500 font-bold tracking-widest uppercase text-[10px]">
                    {d.name}
-                   <div className="w-2 h-2 rounded-sm rotate-45" style={{ backgroundColor: d.color, boxShadow: `0 0 8px ${d.color}` }}></div>
+                   <div className="w-2 h-2 rounded-sm rotate-45" style={{ backgroundColor: d.color, boxShadow: activeIndex === index ? `0 0 12px ${d.color}` : `0 0 8px ${d.color}` }}></div>
                 </div>
-                <div className="bg-[#051020] border border-cyan-800 text-cyan-200 font-mono px-3 py-1 rounded-sm min-w-[70px] text-center shadow-[inset_0_0_8px_rgba(0,229,255,0.1)]">{d.value}</div>
+                <div className={`bg-[#051020] border font-mono px-3 py-1 rounded-sm w-[70px] text-center transition-colors duration-300 ${activeIndex === index ? 'border-cyan-400 text-cyan-100 shadow-[inset_0_0_15px_rgba(0,229,255,0.3)]' : 'border-cyan-800 text-cyan-200 shadow-[inset_0_0_8px_rgba(0,229,255,0.1)]'}`}>
+                  {d.value}
+                </div>
               </div>
             ))}
           </div>

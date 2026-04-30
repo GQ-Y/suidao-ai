@@ -17,6 +17,8 @@ export default function Dashboard({ onClose }: DashboardProps) {
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [selectedDevice, setSelectedDevice] = useState("全部");
+  const [isMaintenance, setIsMaintenance] = useState(false);
+  const [isDirtAlarm, setIsDirtAlarm] = useState(false);
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center pt-8 pb-4 px-4 font-sans text-cyan-50">
@@ -25,8 +27,7 @@ export default function Dashboard({ onClose }: DashboardProps) {
         {/* Top Header */}
         <div className="h-16 bg-gradient-to-r from-[#031121] to-[#020815] border-b border-cyan-900/60 flex items-center justify-between px-6 relative z-20">
           <div className="flex items-center tracking-widest text-lg font-bold">
-             <span className="text-cyan-700 uppercase">系统模块 // &nbsp;</span>
-             <span className="text-cyan-300 text-glow">朔黄铁路 / 长梁山隧道</span>
+             <span className="text-cyan-300 text-glow">长梁山隧道</span>
           </div>
           
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex border border-cyan-900/50 rounded-sm bg-[#051020] overflow-hidden text-xs font-mono uppercase font-bold tracking-widest shadow-[0_0_15px_rgba(0,229,255,0.05)]">
@@ -52,9 +53,27 @@ export default function Dashboard({ onClose }: DashboardProps) {
           </div>
 
           {/* Right Panel */}
-          <div className="flex-1 flex flex-col p-5 gap-5 overflow-hidden relative z-10">
-             <div className="bg-[#030914]/60 border border-cyan-900/40 rounded-sm flex justify-center items-center py-2 relative cyber-panel">
-                <TunnelVisualizer />
+          <div className="flex-1 flex flex-col p-5 gap-4 overflow-hidden relative z-10">
+             {/* Top Control Bar */}
+             <div className="flex items-center justify-end gap-4 text-[11px] font-mono font-bold tracking-widest uppercase">
+                <button 
+                  onClick={() => setIsDirtAlarm(!isDirtAlarm)}
+                  className={`px-4 py-1.5 border rounded-sm transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)] flex items-center gap-2 ${isDirtAlarm ? 'bg-yellow-900/60 border-yellow-500 text-yellow-300 shadow-[inset_0_0_10px_rgba(234,179,8,0.3)]' : 'bg-[#051020] border-cyan-800 text-cyan-600 hover:border-cyan-500 hover:text-cyan-300'}`}
+                >
+                  <div className={`w-2 h-2 rounded-full ${isDirtAlarm ? 'bg-yellow-400 shadow-[0_0_8px_rgba(234,179,8,1)] animate-pulse' : 'bg-cyan-800'}`}></div>
+                  脏污清洁报警
+                </button>
+                <button 
+                  onClick={() => setIsMaintenance(!isMaintenance)}
+                  className={`px-4 py-1.5 border rounded-sm transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)] flex items-center gap-2 ${isMaintenance ? 'bg-orange-900/60 border-orange-500 text-orange-300 shadow-[inset_0_0_10px_rgba(249,115,22,0.3)]' : 'bg-[#051020] border-cyan-800 text-cyan-600 hover:border-cyan-500 hover:text-cyan-300'}`}
+                >
+                  <div className={`w-2 h-2 rounded-full ${isMaintenance ? 'bg-orange-400 shadow-[0_0_8px_rgba(249,115,22,1)] animate-pulse' : 'bg-cyan-800'}`}></div>
+                  施工维护模式
+                </button>
+             </div>
+
+             <div className="bg-[#030914]/60 border border-cyan-900/40 rounded-sm flex justify-center items-center py-2 relative cyber-panel flex-1 max-h-[300px]">
+                <TunnelVisualizer onDeviceClick={(id, hasWarning) => hasWarning ? setShowHandling(true) : setShowMedia('live')} isMaintenance={isMaintenance} isDirtAlarm={isDirtAlarm} />
              </div>
 
              {/* Filters */}
