@@ -38,29 +38,31 @@ export default function TunnelVisualizer() {
     <div className="relative w-full h-[240px] flex flex-col items-center justify-center p-[20px] font-mono overflow-hidden">
       {/* Grid Pattern Background */}
       <div 
-        className="absolute inset-0 opacity-[0.15]"
+        className="absolute inset-0 opacity-[0.2]"
         style={{ 
-          backgroundImage: 'linear-gradient(to right, #334155 1px, transparent 1px), linear-gradient(to bottom, #334155 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(to right, #00E5FF 1px, transparent 1px), linear-gradient(to bottom, #00E5FF 1px, transparent 1px)',
           backgroundSize: '40px 40px'
         }}
       />
+      {/* Scanning radar sweep */}
+      <div className="absolute top-0 bottom-0 left-0 w-[200%] bg-gradient-to-r from-transparent via-cyan-500/10 to-cyan-400/30 animate-[scan_6s_linear_infinite] transform -translate-x-full pointer-events-none z-0"></div>
       
       {/* HUD Info */}
-      <div className="absolute top-4 left-4 text-[10px] text-slate-500 flex flex-col tracking-widest z-10">
-        <span>MODE: <span className="text-emerald-500 font-bold">NORMAL</span></span>
-        <span>SCAN: <span className="text-cyan-500 font-bold">ACTIVE</span></span>
-        <span>SYS: ONLINE</span>
+      <div className="absolute top-4 left-4 text-[11px] text-cyan-600 flex flex-col tracking-widest z-10 font-bold">
+        <span>模式: <span className="text-cyan-300">正常</span></span>
+        <span>扫描: <span className="text-emerald-400">激活</span></span>
+        <span className="text-glow animate-pulse">系统: 在线</span>
       </div>
 
       <svg className="w-full h-full max-w-[800px] z-10 relative" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="tunnelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#0f172a" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#0f172a" stopOpacity="0.4" />
+            <stop offset="0%" stopColor="#041224" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#0a2a4f" stopOpacity="0.6" />
           </linearGradient>
           <linearGradient id="tunnelRedGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#ef4444" stopOpacity="0.1" />
+            <stop offset="0%" stopColor="#8b0000" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#ff4d4f" stopOpacity="0.2" />
           </linearGradient>
         </defs>
 
@@ -69,7 +71,7 @@ export default function TunnelVisualizer() {
           {segments.map((seg, i) => (
              i < segments.length && (
                <path key={`back-${i}`} d={`M ${seg.start} 50 C ${seg.start+30} 50, ${seg.start+30} 140, ${seg.start} 140 L ${seg.end} 140 C ${seg.end+30} 140, ${seg.end+30} 50, ${seg.end} 50 Z`}
-               fill="none" stroke="#1e293b" strokeDasharray="5 5" strokeWidth="1" />
+               fill="none" stroke="#063259" strokeDasharray="5 5" strokeWidth="1" />
              )
           ))}
 
@@ -83,33 +85,29 @@ export default function TunnelVisualizer() {
                   <path
                     d={`M ${seg.start} 50 C ${seg.start+30} 50, ${seg.start+30} 140, ${seg.start} 140 L ${nextSeg.start} 140 C ${nextSeg.start+30} 140, ${nextSeg.start+30} 50, ${nextSeg.start} 50 Z`}
                     fill={isWarning ? "url(#tunnelRedGrad)" : "url(#tunnelGrad)"}
-                    stroke={isWarning ? "#ef4444" : "#475569"}
+                    stroke={isWarning ? "#ef4444" : "#00E5FF"}
+                    strokeOpacity={isWarning ? "0.8" : "0.3"}
                     strokeWidth="1.5"
+                    className={isWarning ? "animate-pulse" : ""}
                   />
                 )}
                 {/* Front Ring */}
                 <ellipse 
                   cx={seg.start} cy="95" rx="15" ry="45" 
-                  fill={isWarning || (i>0 && segments[i-1].warning) ? "rgba(239, 68, 68, 0.15)" : "rgba(15, 23, 42, 0.7)"} 
-                  stroke={isWarning || (i>0 && segments[i-1].warning) ? "#ef4444" : "#64748b"} 
-                  strokeWidth={isWarning || (i>0 && segments[i-1].warning) ? "2.5" : "1.5"} 
+                  fill={isWarning || (i>0 && segments[i-1].warning) ? "rgba(239, 68, 68, 0.15)" : "rgba(0, 229, 255, 0.1)"} 
+                  stroke={isWarning || (i>0 && segments[i-1].warning) ? "#ef4444" : "#00E5FF"} 
+                  strokeOpacity={isWarning || (i>0 && segments[i-1].warning) ? "1" : "0.5"}
+                  strokeWidth="2" 
+                  className={isWarning || (i>0 && segments[i-1].warning) ? "animate-pulse" : ""}
                 />
                 
-                {/* Red radar warning arc */}
-                {(isWarning || (i>0 && segments[i-1].warning)) && (
-                   <path
-                     d={`M ${seg.start-10} 95 A 30 55 0 0 1 ${seg.start-10} 40`}
-                     fill="none" stroke="#ef4444" strokeWidth="5" strokeLinecap="round" className="animate-pulse"
-                   />
-                )}
-                
-                <text x={seg.start} y="165" fill="#64748b" fontSize="10" textAnchor="middle" className="tracking-wider">{seg.label}</text>
+                <text x={seg.start} y="165" fill="#00E5FF" opacity="0.6" fontSize="10" textAnchor="middle" className="tracking-widest">{seg.label}</text>
               </g>
             );
           })}
           
           {/* Base Grid Line */}
-          <line x1="0" y1="150" x2="780" y2="150" stroke="#334155" strokeWidth="2" strokeDasharray="4 4" />
+          <line x1="0" y1="150" x2="780" y2="150" stroke="#063259" strokeWidth="2" strokeDasharray="4 4" />
         </g>
       </svg>
 
@@ -126,27 +124,27 @@ export default function TunnelVisualizer() {
           onMouseLeave={() => setHoveredDevice(null)}
         >
           {/* Position Tag */}
-          <div className="text-[12px] text-slate-500 font-mono tracking-tight mb-2 whitespace-nowrap transform -translate-x-1/2 text-center">
+          <div className="text-[10px] text-cyan-400 font-bold font-mono tracking-widest mb-2 whitespace-nowrap transform -translate-x-1/2 text-center text-glow">
             {device.position}
           </div>
           
           {/* Icon marker cluster */}
-          <div className="flex items-center gap-1 transform -translate-x-1/2">
-             <div className="bg-slate-800 p-1 rounded border border-slate-700">
-                <Disc className="w-3 h-3 text-slate-500" />
+          <div className="flex items-center gap-1.5 transform -translate-x-1/2">
+             <div className="bg-[#051020] p-1 rounded-sm border border-cyan-900 shadow-[0_0_5px_rgba(0,229,255,0.2)]">
+                <Disc className="w-3 h-3 text-cyan-500" />
              </div>
              {/* Main pointer with warning logic */}
-             <div className={`relative p-1.5 rounded-full border shadow-lg ${device.hasWarning ? 'bg-red-600/90 border-red-500 animate-bounce' : 'bg-slate-700/80 border-slate-500'} cursor-pointer hover:scale-110 transition-transform`}>
-                <Video className="w-4 h-4 text-white" />
+             <div className={`relative p-1.5 rounded-full border shadow-lg ${device.hasWarning ? 'bg-red-950/90 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)] animate-pulse' : 'bg-[#0a2a4f]/80 border-cyan-400 shadow-[0_0_10px_rgba(0,229,255,0.4)]'} cursor-pointer hover:scale-110 transition-transform`}>
+                <Video className={`w-4 h-4 ${device.hasWarning ? 'text-red-300' : 'text-cyan-100'}`} />
                 {device.hasWarning && (
                   <span className="absolute -top-1 -right-1 flex h-3 w-3">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)]"></span>
                   </span>
                 )}
              </div>
-             <div className="bg-slate-800 p-1 rounded border border-slate-700">
-                <Activity className="w-3 h-3 text-slate-500" />
+             <div className="bg-[#051020] p-1 rounded-sm border border-cyan-900 shadow-[0_0_5px_rgba(0,229,255,0.2)]">
+                <Activity className={`w-3 h-3 animate-pulse ${device.hasWarning ? 'text-red-500' : 'text-emerald-400'}`} />
              </div>
           </div>
         </div>
@@ -155,24 +153,24 @@ export default function TunnelVisualizer() {
       {/* Tooltip */}
       {hoveredDevice && (
         <div
-          className="absolute pointer-events-none z-10 bg-[#0A0D12]/95 backdrop-blur-sm border border-slate-800 text-slate-300 p-4 rounded shadow-2xl text-sm"
+          className="absolute pointer-events-none z-50 bg-[#020a16]/95 backdrop-blur-md border border-cyan-500/50 text-cyan-100 p-4 rounded-sm shadow-[0_0_30px_rgba(0,229,255,0.2)] text-xs cyber-panel font-mono"
           style={{
             left: `calc(50% - 400px + ${hoveredDevice.xOffset}px)`,
             top: '80px',
             transform: 'translateX(-50%)'
           }}
         >
-          <div className="font-bold flex items-center justify-between min-w-[200px] mb-2 border-b border-slate-800 pb-2">
-            <span>设备名称: {hoveredDevice.name}</span>
-            <span className={hoveredDevice.status === 'online' ? 'text-emerald-400' : 'text-slate-500'}>
+          <div className="font-bold flex items-center justify-between min-w-[200px] mb-3 border-b border-cyan-800/80 pb-2">
+            <span className="text-glow tracking-widest">{hoveredDevice.name}</span>
+            <span className={hoveredDevice.status === 'online' ? 'text-cyan-400' : 'text-slate-500'}>
               {hoveredDevice.status === 'online' ? '在线' : '离线'}
             </span>
           </div>
-          <div className="text-slate-400 font-mono space-y-1">
-            <p>设备位置: {hoveredDevice.position}</p>
-            <p>监测范围: {hoveredDevice.range}</p>
-            <p className="flex items-center gap-2 font-sans tracking-tight mt-2">
-              预警次数: <span className={hoveredDevice.hasWarning ? 'text-red-500 font-bold text-lg' : 'text-white font-bold text-lg'}>{hoveredDevice.alarms}</span> 次
+          <div className="text-cyan-600 font-mono space-y-1 tracking-widest">
+            <p>位置:   <span className="text-cyan-200">{hoveredDevice.position}</span></p>
+            <p>范围: <span className="text-cyan-200">{hoveredDevice.range}</span></p>
+            <p className="flex items-center gap-2 mt-3 text-[11px]">
+              预警: <span className={hoveredDevice.hasWarning ? 'text-red-400 font-bold text-lg text-glow-red' : 'text-cyan-100 font-bold text-lg text-glow'}>{hoveredDevice.alarms}</span>
             </p>
           </div>
         </div>

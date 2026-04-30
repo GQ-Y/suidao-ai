@@ -26,18 +26,18 @@ export default function CustomSelect({ options, value, onChange, placeholder, cl
   return (
     <div className={`relative ${className}`} ref={ref}>
       <div 
-        className="flex items-center justify-between px-3 py-1 bg-slate-900 border border-slate-700 text-slate-300 rounded cursor-pointer hover:border-slate-500 transition-colors text-xs font-mono h-full"
+        className="flex items-center justify-between px-3 py-1 bg-[#051020]/80 border border-cyan-900/60 text-cyan-200 rounded-sm cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_10px_rgba(0,229,255,0.2)] transition-all text-xs font-mono h-full backdrop-blur-sm"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="truncate">{value || placeholder || "Select..."}</span>
-        <ChevronDown className={`w-3 h-3 ml-2 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3 h-3 ml-2 text-cyan-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </div>
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-slate-900 border border-slate-700 rounded shadow-2xl z-50 overflow-hidden font-mono text-xs max-h-[200px] overflow-y-auto custom-scrollbar">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-[#051020] border border-cyan-800 rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.8)] z-50 overflow-hidden font-mono text-xs max-h-[200px] overflow-y-auto custom-scrollbar">
           {options.map((opt, i) => (
             <div 
               key={i}
-              className={`px-3 py-2 cursor-pointer transition-colors ${value === opt ? 'text-cyan-400 bg-slate-800/80' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}
+              className={`px-3 py-2 cursor-pointer transition-colors ${value === opt ? 'text-cyan-300 bg-cyan-900/40' : 'text-cyan-600 hover:bg-cyan-900/20 hover:text-cyan-300'}`}
               onClick={() => {
                 onChange(opt);
                 setIsOpen(false);
