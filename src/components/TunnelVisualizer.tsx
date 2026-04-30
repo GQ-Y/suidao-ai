@@ -17,9 +17,10 @@ interface TunnelVisualizerProps {
   onDeviceClick?: (deviceId: string, hasWarning: boolean) => void;
   isMaintenance?: boolean;
   isDirtAlarm?: boolean;
+  fullScreen?: boolean;
 }
 
-export default function TunnelVisualizer({ onDeviceClick, isMaintenance = false, isDirtAlarm = false }: TunnelVisualizerProps = {}) {
+export default function TunnelVisualizer({ onDeviceClick, isMaintenance = false, isDirtAlarm = false, fullScreen = false }: TunnelVisualizerProps = {}) {
   const [hoveredDevice, setHoveredDevice] = useState<DeviceData | null>(null);
 
   const numDevices = 23;
@@ -56,7 +57,7 @@ export default function TunnelVisualizer({ onDeviceClick, isMaintenance = false,
   }, [isDirtAlarm]);
 
   return (
-    <div className="relative w-full h-[280px] flex flex-col font-mono overflow-hidden">
+    <div className={`relative w-full ${fullScreen ? 'h-full' : 'h-[280px]'} flex flex-col font-mono overflow-hidden`}>
       {/* HUD Info Fixed */}
       <div className="absolute top-4 left-4 text-[11px] text-cyan-600 flex flex-col tracking-widest z-20 font-bold bg-[#02050c]/80 p-2 rounded-sm backdrop-blur-sm border border-cyan-900/30">
         <span>模式: <span className={isMaintenance ? "text-orange-400" : "text-cyan-300"}>{isMaintenance ? "施工维护" : "正常"}</span></span>
@@ -70,21 +71,21 @@ export default function TunnelVisualizer({ onDeviceClick, isMaintenance = false,
       </div>
 
       {/* Scrollable Container */}
-      <div className="w-full flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar relative z-10 px-4">
-        <div className="relative h-full flex items-center justify-center min-w-[2600px]" style={{ width: totalSvgWidth }}>
+      <div className={`w-full flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar relative z-10 ${fullScreen ? 'flex items-center px-4' : 'px-4'}`}>
+        <div className={`relative h-full w-full ${!fullScreen ? 'min-w-[2600px]' : ''}`} style={!fullScreen ? { width: totalSvgWidth } : {}}>
           
           {/* Grid Background */}
           <div 
             className="absolute inset-0 opacity-[0.2]"
             style={{ 
               backgroundImage: 'linear-gradient(to right, #00E5FF 1px, transparent 1px), linear-gradient(to bottom, #00E5FF 1px, transparent 1px)',
-              backgroundSize: '40px 40px'
+              backgroundSize: fullScreen ? '80px 80px' : '40px 40px'
             }}
           />
           {/* Scanning radar sweep */}
           <div className="absolute top-0 bottom-0 left-0 w-full bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent animate-[scan_6s_linear_infinite] pointer-events-none z-0 translate-x-[-100%]"></div>
 
-          <svg className="w-full h-[200px] absolute z-10 top-1/2 transform -translate-y-1/2" viewBox={`0 0 ${totalSvgWidth} 200`} preserveAspectRatio="none">
+          <svg className={`w-full ${fullScreen ? 'h-full max-h-[800px]' : 'h-[200px]'} absolute z-10 top-1/2 transform -translate-y-1/2`} viewBox={`0 0 ${totalSvgWidth} 200`} preserveAspectRatio="none">
             <defs>
               <linearGradient id="tunnelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#041224" stopOpacity="0.9" />
@@ -150,7 +151,7 @@ export default function TunnelVisualizer({ onDeviceClick, isMaintenance = false,
             <div
               key={device.id}
               className="absolute z-20 group"
-              style={{ left: `${device.xOffset}px`, top: '50%', transform: 'translateY(15px)' }}
+              style={{ left: `${(device.xOffset / totalSvgWidth) * 100}%`, top: '50%', transform: `translateY(${fullScreen ? '45px' : '15px'})` }}
               onMouseEnter={() => setHoveredDevice(device)}
               onMouseLeave={() => setHoveredDevice(null)}
             >
@@ -195,28 +196,28 @@ export default function TunnelVisualizer({ onDeviceClick, isMaintenance = false,
           {/* Tooltip */}
           {hoveredDevice && (
             <div
-              className="absolute z-[60] bg-[#020a16]/95 backdrop-blur-md border border-cyan-500/50 text-cyan-100 p-4 rounded-sm shadow-[0_0_30px_rgba(0,229,255,0.4)] text-xs cyber-panel font-mono pointer-events-none transition-all duration-75 ease-linear"
+              className="absolute z-[60] w-max bg-[#020a16]/95 backdrop-blur-md border border-cyan-500/50 text-cyan-100 p-3 rounded-sm shadow-[0_0_30px_rgba(0,229,255,0.4)] text-[11px] cyber-panel font-mono pointer-events-none transition-all duration-75 ease-linear"
               style={{
-                left: `${hoveredDevice.xOffset}px`,
+                left: `${(hoveredDevice.xOffset / totalSvgWidth) * 100}%`,
                 top: '40px',
                 transform: 'translateX(-50%)'
               }}
             >
-              <div className="font-bold flex items-center justify-between min-w-[200px] mb-3 border-b border-cyan-800/80 pb-2">
-                <span className="text-glow tracking-widest">{hoveredDevice.name} <span className="text-[10px] text-cyan-500 font-normal ml-2">({hoveredDevice.id}/23)</span></span>
-                <span className={hoveredDevice.status === 'online' ? 'text-cyan-400' : 'text-slate-500'}>
+              <div className="font-bold flex items-center justify-between min-w-[160px] mb-2 border-b border-cyan-800/80 pb-2">
+                <span className="text-glow tracking-widest">{hoveredDevice.name} <span className="text-[10px] text-cyan-500 font-normal ml-1">({hoveredDevice.id})</span></span>
+                <span className={hoveredDevice.status === 'online' ? 'text-cyan-400 text-[10px]' : 'text-slate-500 text-[10px]'}>
                   {hoveredDevice.status === 'online' ? '在线' : '离线'}
                 </span>
               </div>
-              <div className="text-cyan-600 font-mono space-y-1 tracking-widest">
-                <p>位置:   <span className="text-cyan-200">{hoveredDevice.position}</span></p>
+              <div className="text-cyan-600 font-mono space-y-1 tracking-wider text-[10px]">
+                <p>位置: <span className="text-cyan-200">{hoveredDevice.position}</span></p>
                 <p>范围: <span className="text-cyan-200">{hoveredDevice.range}</span></p>
-                <p className="flex items-center gap-2 mt-3 text-[11px]">
-                  预警: <span className={hoveredDevice.hasWarning ? 'text-red-400 font-bold text-lg text-glow-red' : 'text-cyan-100 font-bold text-lg text-glow'}>{hoveredDevice.alarms}</span>
+                <p className="flex items-center gap-2 mt-2">
+                  预警: <span className={hoveredDevice.hasWarning ? 'text-red-400 font-bold text-sm text-glow-red' : 'text-cyan-100 font-bold text-sm text-glow'}>{hoveredDevice.alarms}</span>
                 </p>
                 {hoveredDevice.isDirty && (
-                  <div className="mt-2 text-[10px] text-yellow-300 bg-yellow-900/40 border border-yellow-700/50 p-1.5 rounded-sm flex items-center justify-center font-bold tracking-widest animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.2)]">
-                    ⚠️ 设备需要脏污清洁
+                  <div className="mt-2 text-[10px] text-yellow-300 bg-yellow-900/40 border border-yellow-700/50 p-1 rounded-sm flex items-center justify-center font-bold tracking-widest animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.2)]">
+                    ⚠️ 需脏污清洁
                   </div>
                 )}
               </div>
